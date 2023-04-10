@@ -1,7 +1,8 @@
 import Image from 'next/image';
 import React, { useState } from 'react';
 import DataTable from 'react-data-table-component';
-import styles from './products.modules.css';
+import styles from './products.module.css';
+import Link from 'next/link';
 
 const AllProductsList = () => {
   const [products, setProducts] = useState([
@@ -58,7 +59,11 @@ const AllProductsList = () => {
 
   return (
     <div className={styles.AllProductsList}>
-      <button className='btn btn-primary'>Add new product</button>
+      <Link href='/products/new-product'>
+        <button id={styles['new-product-button']} className='btn btn-primary'>
+          Add new product
+        </button>
+      </Link>
       <DataTable columns={columns} data={products} />
     </div>
   );
