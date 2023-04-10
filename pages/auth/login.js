@@ -15,7 +15,7 @@ const Login = () => {
     console.log('login');
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      route.push('/auth/dashboard');
+      return route.push('/auth/dashboard');
     } catch (error) {
       console.log(error);
     }
@@ -28,10 +28,7 @@ const Login = () => {
   }, [user, route]);
 
   return (
-    <div
-      id={styles['Login']}
-      className='d-flex justify-content-center align-items-center'
-    >
+    <div className='d-flex justify-content-center align-items-center min-vh-100'>
       <div
         onClick={login}
         id={styles['login-button']}

@@ -2,38 +2,49 @@ import { auth } from '@/utils/firebase';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import styles from './Navbar.module.css';
 
 const Navbar = () => {
   const route = useRouter();
   const [user, loading] = useAuthState(auth);
 
+  const loginPage = route.pathname === '/auth/login';
+
   const logout = () => {
     auth.signOut();
-    route.push('/auth/login');
+    return route.push('/auth/login');
   };
 
   return (
-    <nav className='navbar navbar-expand-lg bg-body-tertiary'>
-      {user && (
-        <div className='container-fluid'>
-          <Link className='navbar-brand' href='/'>
-            Dashboard
-          </Link>
-          <Link className='navbar-brand' href='/'>
-            Products
-          </Link>
-          <Link className='navbar-brand' href='/'>
-            Users
-          </Link>
-          <Link className='navbar-brand' href='/'>
-            Orders
-          </Link>
-          <button onClick={logout} className='navbar-brand btn-light'>
-            Sign out
-          </button>
-        </div>
+    <>
+      {!loginPage && (
+        <nav className='navbar navbar-expand-lg bg-body-tertiary bg-info'>
+          {user && (
+            <div className='container-fluid'>
+              <Link className='navbar-brand' href='/'>
+                Dashboard
+              </Link>
+              <Link className='navbar-brand' href='/dashboard/products'>
+                Products
+              </Link>
+              <Link className='navbar-brand' href='/dashboard/users'>
+                Users
+              </Link>
+              <Link className='navbar-brand' href='/dashboard/orders'>
+                Orders
+              </Link>
+              <div
+                id={styles['logout-button']}
+                onClick={logout}
+                className='navbar-brand'
+              >
+                Sign out
+              </div>
+            </div>
+          )}
+        </nav>
       )}
-    </nav>
+    </>
   );
 };
 
