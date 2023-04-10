@@ -13,7 +13,7 @@ export default function Home() {
     if (user) {
       route.push('/dashboard');
     } else {
-      route.push('/login');
+      route.push('auth/login');
     }
   }, [user, route]);
 
