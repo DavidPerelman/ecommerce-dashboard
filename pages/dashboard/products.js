@@ -11,7 +11,7 @@ const AllProductsList = () => {
       title: 'Samsung Galaxy A52',
       category: 'Phones',
       price: 500,
-      image:
+      thumbnail:
         '/images/products/phones/sa-en-galaxy-a52-a525-sm-a525fzkhmea-475124311.png',
     },
     {
@@ -19,7 +19,7 @@ const AllProductsList = () => {
       title: 'AirPods Pro (2nd generation)',
       category: 'AirPods',
       price: 249,
-      image: '/images/products/airPods/MQD83.jpg',
+      thumbnail: '/images/products/airPods/MQD83.jpg',
     },
   ]);
 
@@ -27,7 +27,7 @@ const AllProductsList = () => {
     {
       name: '#',
       selector: (row) => (
-        <Image src={row.image} alt='me' width='64' height='64' />
+        <Image src={row.thumbnail} alt='me' width='64' height='64' />
       ),
     },
     {
