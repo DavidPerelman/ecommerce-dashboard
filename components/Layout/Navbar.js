@@ -1,12 +1,20 @@
+import { auth } from '@/utils/firebase';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 const Navbar = () => {
-  const [loggedin, setLoggedin] = useState(false);
+  const route = useRouter();
+  const [user, loading] = useAuthState(auth);
+
+  const logout = () => {
+    auth.signOut();
+    route.push('/auth/login');
+  };
 
   return (
     <nav className='navbar navbar-expand-lg bg-body-tertiary'>
-      {loggedin && (
+      {user && (
         <div className='container-fluid'>
           <Link className='navbar-brand' href='/'>
             Dashboard
@@ -20,9 +28,9 @@ const Navbar = () => {
           <Link className='navbar-brand' href='/'>
             Orders
           </Link>
-          <Link className='navbar-brand' href='/'>
-            Logout
-          </Link>
+          <button onClick={logout} className='navbar-brand btn-light'>
+            Sign out
+          </button>
         </div>
       )}
     </nav>
