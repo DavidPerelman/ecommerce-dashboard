@@ -25,16 +25,6 @@ const Navbar = () => {
           </Link>
         </div>
       )}
-      {!loggedin && (
-        <div className='container-fluid'>
-          <Link className='navbar-brand' href='/'>
-            Dashboard
-          </Link>
-          <Link className='navbar-brand' href='/'>
-            Login
-          </Link>
-        </div>
-      )}
     </nav>
   );
 };

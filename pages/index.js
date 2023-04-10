@@ -1,6 +1,22 @@
+import { auth } from '@/utils/firebase';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 export default function Home() {
+  const [user, loading] = useAuthState(auth);
+  const route = useRouter();
+  console.log(user);
+
+  useEffect(() => {
+    if (user) {
+      route.push('/dashboard');
+    } else {
+      route.push('/login');
+    }
+  }, [user, route]);
+
   return (
     <>
       <Head>
