@@ -11,9 +11,9 @@ export default function Home() {
 
   useEffect(() => {
     if (user) {
-      route.push('/dashboard');
+      route.push('/auth/dashboard');
     } else {
-      route.push('auth/login');
+      route.push('/auth/login');
     }
   }, [user, route]);
 
