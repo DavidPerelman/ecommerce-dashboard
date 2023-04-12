@@ -11,6 +11,8 @@ const NewProductPage = () => {
     thumbnail: '',
   });
   const [selectedImage, setSelectedImage] = useState('');
+  const [selectedFile, setSelectedFile] = useState();
+
   const [categories, setCategories] = useState([
     { id: 'c1', title: 'Phones' },
     { id: 'c2', title: 'AirPods' },
@@ -26,15 +28,49 @@ const NewProductPage = () => {
     console.log(selectedId);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setNewProduct({
-      title: productTitleRef.current.value,
-      category: productCategoryRef.current.value,
-      description: productDescriptionRef.current.value,
-      price: productPriceRef.current.value,
+  const inputChangeHandler = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+
+      setSelectedFile(file);
+      setSelectedImage(URL.createObjectURL(file));
+    }
+  };
+
+  const uploadToServer = async (event) => {
+    const body = new FormData();
+    // console.log("file", image)
+    body.append('file', selectedFile);
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body,
     });
-    console.log(newProduct);
+
+    return await response.json();
+  };
+
+  const isObjEmpty = async (obj) => {
+    return Object.values(obj).length === 0 && obj.constructor === Object;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const uploadImage = await uploadToServer();
+    const failedUploadedImage = await isObjEmpty(uploadImage);
+    if (!failedUploadedImage) {
+      console.log(uploadImage.file.name);
+      setNewProduct({
+        title: productTitleRef.current.value,
+        category: productCategoryRef.current.value,
+        description: productDescriptionRef.current.value,
+        price: productPriceRef.current.value,
+        thumbnail: `/products-images/${uploadImage.file.name}`,
+      });
+      console.log(newProduct);
+    } else {
+      console.log('error');
+    }
   };
 
   return (
@@ -88,34 +124,49 @@ const NewProductPage = () => {
           />
         </div>
         <div className='col-md-2'>
-          <label htmlFor='inputZip' className='form-label'>
+          <label htmlFor='inputPrice' className='form-label'>
             Price:
           </label>
           <input
             ref={productPriceRef}
             type='text'
             className='form-control'
-            id='inputZip'
+            id='inputPrice'
           />
         </div>
+        <div className='col-md-3'></div>
+        <div className='col-md-3'></div>
+        <div className='col-md-3'></div>
         <div className='col-md-3'>
           <label htmlFor='inputThumbnail' className='form-label'>
             Thumbnail:
           </label>
           <input
-            ref={productPriceRef}
-            hidden
+            // hidden
             type='file'
-            className='form-control'
+            // className='form-control'
             id='inputThumbnail'
+            onChange={(e) => inputChangeHandler(e)}
           />
-          <div>
+          <button
+            className='btn btn-primary'
+            type='submit'
+            onClick={uploadToServer}
+          >
+            Send to server
+          </button>
+          {/* <div>
             {selectedImage ? (
               <Image src={selectedImage} alt='' />
             ) : (
-              <button className='btn btn-secondary'>Select Image</button>
+              <div
+                id={styles['input-thumbnail-input']}
+                className='d-flex justify-content-center align-items-center rounded'
+              >
+                Select Image
+              </div>
             )}
-          </div>
+          </div> */}
         </div>
         <div className='col-12'>
           <button type='submit' className='btn btn-primary'>
