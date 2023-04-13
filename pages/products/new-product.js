@@ -1,8 +1,12 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import styles from './new-product.module.css';
 import Image from 'next/image';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/utils/firebase';
+import { useRouter } from 'next/router';
 
 const NewProductPage = () => {
+  const route = useRouter();
   const [newProduct, setNewProduct] = useState({
     title: '',
     category: '',
@@ -18,35 +22,23 @@ const NewProductPage = () => {
     { id: 'c2', title: 'AirPods' },
   ]);
 
-  const productTitleRef = useRef();
-  const productCategoryRef = useRef();
-  const productDescriptionRef = useRef();
-  const productPriceRef = useRef();
-
-  const handleChange = (e) => {
-    const selectedId = e.target.value;
-    console.log(selectedId);
-  };
-
-  const inputChangeHandler = (e) => {
+  const inputChangeHandler = async (e) => {
+    e.preventDefault();
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
 
       setSelectedFile(file);
       setSelectedImage(URL.createObjectURL(file));
+      setNewProduct((params) => ({
+        ...params, // Reuse the previous properties
+        thumbnail: `/products-images/${e.target.files[0].name}`, // Overwrite the new ones
+      }));
+    } else {
+      setNewProduct((params) => ({
+        ...params, // Reuse the previous properties
+        thumbnail: '', // Overwrite the new ones
+      }));
     }
-  };
-
-  const uploadToServer = async (event) => {
-    const body = new FormData();
-    // console.log("file", image)
-    body.append('file', selectedFile);
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body,
-    });
-
-    return await response.json();
   };
 
   const isObjEmpty = async (obj) => {
@@ -56,20 +48,36 @@ const NewProductPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const uploadImage = await uploadToServer();
-    const failedUploadedImage = await isObjEmpty(uploadImage);
-    if (!failedUploadedImage) {
-      console.log(uploadImage.file.name);
-      setNewProduct({
-        title: productTitleRef.current.value,
-        category: productCategoryRef.current.value,
-        description: productDescriptionRef.current.value,
-        price: productPriceRef.current.value,
-        thumbnail: `/products-images/${uploadImage.file.name}`,
+    for (const property in newProduct) {
+      if (newProduct[property] === '') {
+        return console.log('All fields require!');
+      }
+    }
+
+    if (selectedFile) {
+      const body = new FormData();
+      body.append('file', selectedFile);
+      const response = await fetch('/api/upload/c1', {
+        method: 'POST',
+        body,
       });
-      console.log(newProduct);
-    } else {
-      console.log('error');
+
+      const data = await response.json();
+      const failedUploadedImage = await isObjEmpty(data);
+
+      if (failedUploadedImage) {
+        return console.log('No image found!');
+      } else {
+        const collectionRef = collection(db, 'products');
+        const productAdded = await addDoc(collectionRef, {
+          ...newProduct,
+          timestamp: serverTimestamp(),
+        });
+
+        if (productAdded) {
+          route.push('/');
+        }
+      }
     }
   };
 
@@ -81,10 +89,15 @@ const NewProductPage = () => {
             Title:
           </label>
           <input
-            ref={productTitleRef}
             type='text'
             className='form-control'
             id='inputTitle4'
+            onChange={(e) =>
+              setNewProduct((params) => ({
+                ...params, // Reuse the previous properties
+                title: e.target.value, // Overwrite the new ones
+              }))
+            }
           />
         </div>
         <div className='col-md-6'>
@@ -92,7 +105,13 @@ const NewProductPage = () => {
             Category:
           </label>
           <select
-            onChange={handleChange}
+            onChange={(e) =>
+              setNewProduct((params) => ({
+                ...params, // Reuse the previous properties
+                category: e.target.value, // Overwrite the new ones
+              }))
+            }
+            // onChange={handleChange}
             id='inputCategory'
             className='form-select'
           >
@@ -101,11 +120,7 @@ const NewProductPage = () => {
             </option>
             {categories.map((category) => {
               return (
-                <option
-                  key={category.id}
-                  value={category.id}
-                  ref={productCategoryRef}
-                >
+                <option key={category.id} value={category.id}>
                   {category.title}
                 </option>
               );
@@ -117,10 +132,15 @@ const NewProductPage = () => {
             Description:
           </label>
           <input
-            ref={productDescriptionRef}
             type='text'
             className='form-control'
             id='inputDescription'
+            onChange={(e) =>
+              setNewProduct((params) => ({
+                ...params, // Reuse the previous properties
+                description: e.target.value, // Overwrite the new ones
+              }))
+            }
           />
         </div>
         <div className='col-md-2'>
@@ -128,10 +148,15 @@ const NewProductPage = () => {
             Price:
           </label>
           <input
-            ref={productPriceRef}
             type='text'
             className='form-control'
             id='inputPrice'
+            onChange={(e) =>
+              setNewProduct((params) => ({
+                ...params, // Reuse the previous properties
+                price: e.target.value, // Overwrite the new ones
+              }))
+            }
           />
         </div>
         <div className='col-md-3'></div>
@@ -142,31 +167,11 @@ const NewProductPage = () => {
             Thumbnail:
           </label>
           <input
-            // hidden
             type='file'
-            // className='form-control'
+            className='form-control'
             id='inputThumbnail'
             onChange={(e) => inputChangeHandler(e)}
           />
-          <button
-            className='btn btn-primary'
-            type='submit'
-            onClick={uploadToServer}
-          >
-            Send to server
-          </button>
-          {/* <div>
-            {selectedImage ? (
-              <Image src={selectedImage} alt='' />
-            ) : (
-              <div
-                id={styles['input-thumbnail-input']}
-                className='d-flex justify-content-center align-items-center rounded'
-              >
-                Select Image
-              </div>
-            )}
-          </div> */}
         </div>
         <div className='col-12'>
           <button type='submit' className='btn btn-primary'>
