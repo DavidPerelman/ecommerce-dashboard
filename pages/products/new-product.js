@@ -22,6 +22,21 @@ const NewProductPage = () => {
     { id: 'c2', title: 'AirPods' },
   ]);
 
+  const changeCategoryHandler = (e) => {
+    e.preventDefault();
+
+    console.log('fdfd');
+
+    for (let i = 0; i < categories.length; i++) {
+      console.log(categories[i].id === e.target.value);
+
+      setNewProduct((params) => ({
+        ...params, // Reuse the previous properties
+        category: categories[i], // Overwrite the new ones
+      }));
+    }
+  };
+
   const inputChangeHandler = async (e) => {
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
@@ -105,12 +120,7 @@ const NewProductPage = () => {
             Category:
           </label>
           <select
-            onChange={(e) =>
-              setNewProduct((params) => ({
-                ...params, // Reuse the previous properties
-                category: e.target.value, // Overwrite the new ones
-              }))
-            }
+            onChange={(e) => changeCategoryHandler(e)}
             // onChange={handleChange}
             id='inputCategory'
             className='form-select'
