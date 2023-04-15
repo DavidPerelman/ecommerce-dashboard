@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import styles from './new-product.module.css';
 import Image from 'next/image';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/utils/firebase';
+import { db, storage } from '@/utils/firebase';
 import { useRouter } from 'next/router';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { v4 as uuidv4 } from 'uuid';
 
 const NewProductPage = () => {
   const route = useRouter();
@@ -14,7 +16,9 @@ const NewProductPage = () => {
     price: '',
     thumbnail: '',
   });
+
   const [selectedImage, setSelectedImage] = useState('');
+  const [imageSelected, setImageSelected] = useState(false);
   const [selectedFile, setSelectedFile] = useState();
 
   const [categories, setCategories] = useState([
@@ -25,75 +29,79 @@ const NewProductPage = () => {
   const changeCategoryHandler = (e) => {
     e.preventDefault();
 
-    console.log('fdfd');
+    console.log('changeCategoryHandler');
 
     for (let i = 0; i < categories.length; i++) {
-      console.log(categories[i].id === e.target.value);
-
-      setNewProduct((params) => ({
-        ...params, // Reuse the previous properties
-        category: categories[i], // Overwrite the new ones
-      }));
+      if (categories[i].id === e.target.value) {
+        setNewProduct((params) => ({
+          ...params, // Reuse the previous properties
+          category: categories[i], // Overwrite the new ones
+        }));
+      }
     }
   };
 
   const inputChangeHandler = async (e) => {
     e.preventDefault();
-    if (e.target.files && e.target.files[0]) {
+    console.log(e.target.files.length);
+    if (e.target.files && e.target.files[0] && e.target.files.length > 0) {
       const file = e.target.files[0];
-
-      setSelectedFile(file);
-      setSelectedImage(URL.createObjectURL(file));
-      setNewProduct((params) => ({
-        ...params, // Reuse the previous properties
-        thumbnail: `/products-images/${e.target.files[0].name}`, // Overwrite the new ones
-      }));
+      setSelectedImage(file);
+      setImageSelected(true);
     } else {
-      setNewProduct((params) => ({
-        ...params, // Reuse the previous properties
-        thumbnail: '', // Overwrite the new ones
-      }));
+      setImageSelected(false);
     }
-  };
-
-  const isObjEmpty = async (obj) => {
-    return Object.values(obj).length === 0 && obj.constructor === Object;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    for (const property in newProduct) {
-      if (newProduct[property] === '') {
-        return console.log('All fields require!');
-      }
-    }
+    console.log(selectedImage.name);
 
-    if (selectedFile) {
-      const body = new FormData();
-      body.append('file', selectedFile);
-      const response = await fetch('/api/upload/c1', {
-        method: 'POST',
-        body,
-      });
-
-      const data = await response.json();
-      const failedUploadedImage = await isObjEmpty(data);
-
-      if (failedUploadedImage) {
-        return console.log('No image found!');
-      } else {
-        const collectionRef = collection(db, 'products');
-        const productAdded = await addDoc(collectionRef, {
-          ...newProduct,
-          timestamp: serverTimestamp(),
-        });
-
-        if (productAdded) {
-          route.push('/');
+    if (imageSelected) {
+      const newProductObject = Object.values(newProduct);
+      for (let i = 0; i < newProductObject.length - 1; i++) {
+        if (newProductObject[i] === '') {
+          return console.log('All fields require!');
         }
       }
+
+      const imageName = `image-${uuidv4()}`;
+
+      const imageRef = ref(
+        storage,
+        `images/${newProduct.category.title}/${imageName}`
+      );
+
+      uploadBytes(imageRef, selectedImage).then((res) => {
+        getDownloadURL(imageRef)
+          .then((url) => {
+            setNewProduct((params) => ({
+              ...params, // Reuse the previous properties
+              thumbnail: url, // Overwrite the new ones
+            }));
+          })
+          .then(() => {
+            const collectionRef = collection(db, 'products');
+            addDoc(collectionRef, {
+              ...newProduct,
+              timestamp: serverTimestamp(),
+            })
+              .then((data) => {
+                if (data) {
+                  route.push('/dashboard/products');
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          });
+      });
+    } else {
+      return console.log('All fields require!');
     }
+
+    // sendRequst();
   };
 
   return (
@@ -124,8 +132,9 @@ const NewProductPage = () => {
             // onChange={handleChange}
             id='inputCategory'
             className='form-select'
+            defaultValue={'default'}
           >
-            <option disabled value>
+            <option value={'default'} disabled>
               Choose Category...
             </option>
             {categories.map((category) => {
