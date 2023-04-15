@@ -14,12 +14,11 @@ const NewProductPage = () => {
     category: '',
     description: '',
     price: '',
-    thumbnail: '',
   });
 
   const [selectedImage, setSelectedImage] = useState('');
   const [imageSelected, setImageSelected] = useState(false);
-  const [selectedFile, setSelectedFile] = useState();
+  const [loading, setLoading] = useState(false);
 
   const [categories, setCategories] = useState([
     { id: 'c1', title: 'Phones' },
@@ -28,8 +27,6 @@ const NewProductPage = () => {
 
   const changeCategoryHandler = (e) => {
     e.preventDefault();
-
-    console.log('changeCategoryHandler');
 
     for (let i = 0; i < categories.length; i++) {
       if (categories[i].id === e.target.value) {
@@ -53,10 +50,14 @@ const NewProductPage = () => {
     }
   };
 
+  const uploadImageToStorage = async (imageRef) => {
+    const image = await uploadBytes(imageRef, selectedImage);
+    const url = await getDownloadURL(imageRef);
+    return url;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    console.log(selectedImage.name);
 
     if (imageSelected) {
       const newProductObject = Object.values(newProduct);
@@ -73,35 +74,29 @@ const NewProductPage = () => {
         `images/${newProduct.category.title}/${imageName}`
       );
 
-      uploadBytes(imageRef, selectedImage).then((res) => {
-        getDownloadURL(imageRef)
-          .then((url) => {
-            setNewProduct((params) => ({
-              ...params, // Reuse the previous properties
-              thumbnail: url, // Overwrite the new ones
-            }));
+      const url = await uploadImageToStorage(imageRef);
+
+      if (url) {
+        const collectionRef = collection(db, 'products');
+        addDoc(collectionRef, {
+          ...newProduct,
+          thumbnail: url,
+          timestamp: serverTimestamp(),
+        })
+          .then((data) => {
+            if (data) {
+              route.push('/dashboard/products');
+            }
           })
-          .then(() => {
-            const collectionRef = collection(db, 'products');
-            addDoc(collectionRef, {
-              ...newProduct,
-              timestamp: serverTimestamp(),
-            })
-              .then((data) => {
-                if (data) {
-                  route.push('/dashboard/products');
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-              });
+          .catch((error) => {
+            return console.log(error);
           });
-      });
+      } else {
+        return console.log('error');
+      }
     } else {
       return console.log('All fields require!');
     }
-
-    // sendRequst();
   };
 
   return (
