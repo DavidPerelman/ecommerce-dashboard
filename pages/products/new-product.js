@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
 import Modal from '@/components/UI/Modal/Modal';
+import LoadingSpinner from '@/components/UI/LoadingSpinner/LoadingSpinner';
 
 const NewProductPage = () => {
   const route = useRouter();
@@ -19,6 +20,7 @@ const NewProductPage = () => {
 
   const [selectedImage, setSelectedImage] = useState('');
   const [imageSelected, setImageSelected] = useState(false);
+  const [error, setError] = useState('error');
   const [loading, setLoading] = useState(false);
 
   const [categories, setCategories] = useState([
@@ -60,10 +62,13 @@ const NewProductPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setLoading(true);
+
     if (imageSelected) {
       const newProductObject = Object.values(newProduct);
       for (let i = 0; i < newProductObject.length - 1; i++) {
         if (newProductObject[i] === '') {
+          setLoading(false);
           return console.log('All fields require!');
         }
       }
@@ -86,23 +91,48 @@ const NewProductPage = () => {
         })
           .then((data) => {
             if (data) {
+              setLoading(false);
               route.push('/dashboard/products');
             }
           })
           .catch((error) => {
+            setLoading(false);
             return console.log(error);
           });
       } else {
+        setLoading(false);
         return console.log('error');
       }
     } else {
-      return console.log('All fields require!');
+      setLoading(false);
+      return setError('All fields require!');
     }
   };
 
   return (
     <div className={styles.NewProductPage}>
-      <Modal />
+      {error && (
+        <Modal>
+          <div className='alert alert-danger' role='alert'>
+            {error}
+          </div>
+          <button
+            onClick={() => setError('')}
+            type='button'
+            className='btn btn-primary'
+          >
+            Close
+          </button>
+        </Modal>
+      )}
+      {loading && (
+        <Modal>
+          <h1 className={styles.loadingModalHeader}>Loading...</h1>
+          <div className={styles.loadingSpinner}>
+            <LoadingSpinner />
+          </div>
+        </Modal>
+      )}
       <form onSubmit={handleSubmit} className='row g-3'>
         <div className='col-md-6'>
           <label htmlFor='inputTitle4' className='form-label'>

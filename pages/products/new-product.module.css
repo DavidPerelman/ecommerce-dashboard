@@ -16,3 +16,13 @@
 #input-thumbnail-input:hover {
   cursor: pointer;
 }
+
+.loadingModalHeader {
+  text-align: center;
+}
+
+.loadingSpinner {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+}
