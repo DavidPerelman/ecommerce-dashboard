@@ -14,7 +14,6 @@ import {
 const AllCategoriesList = ({ startingCategories }) => {
   const [categories, setCategories] = useState(startingCategories);
 
-  console.log(categories);
   const columns = [
     {
       name: 'Title',

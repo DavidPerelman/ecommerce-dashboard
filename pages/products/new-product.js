@@ -42,8 +42,6 @@ const NewProductPage = () => {
     }
   };
 
-  // console.log(URL.createObjectURL(selectedImage));
-
   const inputChangeHandler = async (e) => {
     e.preventDefault();
     console.log(e.target.files.length);

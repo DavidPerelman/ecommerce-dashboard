@@ -5,6 +5,7 @@ import { auth } from '@/utils/firebase';
 import { useRouter } from 'next/router';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useEffect } from 'react';
+import AuthForm from '@/components/Auth/AuthForm/AuthForm';
 
 const Login = () => {
   const route = useRouter();
@@ -29,14 +30,15 @@ const Login = () => {
 
   return (
     <div className='d-flex justify-content-center align-items-center min-vh-100'>
-      <div
+      {/* <div
         onClick={login}
         id={styles['login-button']}
         className='flex p-3 mb-3 bg-dark text-white rounded gap-3'
       >
         <FcGoogle className='m-auto' />
         Sign in with Google
-      </div>
+      </div> */}
+      <AuthForm />
     </div>
   );
 };
