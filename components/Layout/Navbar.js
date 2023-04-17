@@ -27,6 +27,9 @@ const Navbar = () => {
               <Link className='navbar-brand' href='/dashboard/products'>
                 Products
               </Link>
+              <Link className='navbar-brand' href='/dashboard/categoriess'>
+                Categories
+              </Link>
               <Link className='navbar-brand' href='/dashboard/users'>
                 Users
               </Link>
