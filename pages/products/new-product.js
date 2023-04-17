@@ -6,6 +6,7 @@ import { db, storage } from '@/utils/firebase';
 import { useRouter } from 'next/router';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { v4 as uuidv4 } from 'uuid';
+import Modal from '@/components/UI/Modal/Modal';
 
 const NewProductPage = () => {
   const route = useRouter();
@@ -101,6 +102,7 @@ const NewProductPage = () => {
 
   return (
     <div className={styles.NewProductPage}>
+      <Modal />
       <form onSubmit={handleSubmit} className='row g-3'>
         <div className='col-md-6'>
           <label htmlFor='inputTitle4' className='form-label'>
