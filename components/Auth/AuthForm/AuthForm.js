@@ -2,29 +2,22 @@ import { useContext, useRef, useState } from 'react';
 import classes from './AuthForm.module.css';
 import Modal from '@/components/UI/Modal/Modal';
 import LoadingSpinner from '@/components/UI/LoadingSpinner/LoadingSpinner';
+import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
+import { auth } from '@/utils/firebase';
 
 const AuthForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
   const [error, setError] = useState('');
-
-  const clearError = () => {
-    setTimeout(() => {
-      setError(null);
-    }, 3000);
-  };
+  const [signInWithEmailAndPassword, user, loading] =
+    useSignInWithEmailAndPassword(auth);
 
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    setIsLoading(true);
-
     const enteredEmail = emailInputRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
-
-    console.log(enteredEmail);
-    console.log(enteredPassword);
 
     const regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
 
@@ -34,14 +27,15 @@ const AuthForm = () => {
     } else {
       if (!regex.test(enteredEmail)) {
         setError('The email address is not valid!');
-        clearError();
         return;
-      }
-
-      if (enteredPassword.length < 7) {
-        setError('The password must contain at least 6 characters!');
-        clearError();
-        return;
+      } else {
+        const response = await signInWithEmailAndPassword(
+          enteredEmail,
+          enteredPassword
+        );
+        if (!response) {
+          setError('Sign in Error!');
+        }
       }
     }
   };
