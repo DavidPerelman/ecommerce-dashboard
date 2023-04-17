@@ -20,7 +20,8 @@ const NewProductPage = () => {
 
   const [selectedImage, setSelectedImage] = useState('');
   const [imageSelected, setImageSelected] = useState(false);
-  const [error, setError] = useState('error');
+  const [imageThumbnail, setImageThumbnail] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const [categories, setCategories] = useState([
@@ -41,12 +42,15 @@ const NewProductPage = () => {
     }
   };
 
+  // console.log(URL.createObjectURL(selectedImage));
+
   const inputChangeHandler = async (e) => {
     e.preventDefault();
     console.log(e.target.files.length);
     if (e.target.files && e.target.files[0] && e.target.files.length > 0) {
       const file = e.target.files[0];
       setSelectedImage(file);
+      setImageThumbnail(URL.createObjectURL(file));
       setImageSelected(true);
     } else {
       setImageSelected(false);
@@ -69,7 +73,7 @@ const NewProductPage = () => {
       for (let i = 0; i < newProductObject.length - 1; i++) {
         if (newProductObject[i] === '') {
           setLoading(false);
-          return console.log('All fields require!');
+          return setError('All fields require!');
         }
       }
 
@@ -97,11 +101,11 @@ const NewProductPage = () => {
           })
           .catch((error) => {
             setLoading(false);
-            return console.log(error);
+            return setError(error);
           });
       } else {
         setLoading(false);
-        return console.log('error');
+        return setError('error');
       }
     } else {
       setLoading(false);
@@ -113,7 +117,7 @@ const NewProductPage = () => {
     <div className={styles.NewProductPage}>
       {error && (
         <Modal>
-          <div className='alert alert-danger' role='alert'>
+          <div className='alert alert-danger text-center' role='alert'>
             {error}
           </div>
           <button
@@ -205,9 +209,8 @@ const NewProductPage = () => {
             }
           />
         </div>
-        <div className='col-md-3'></div>
-        <div className='col-md-3'></div>
-        <div className='col-md-3'></div>
+        {/* <div className='col-md-3'></div> */}
+        {/* <div className='col-md-3'></div> */}
         <div className='col-md-3'>
           <label htmlFor='inputThumbnail' className='form-label'>
             Thumbnail:
@@ -219,6 +222,13 @@ const NewProductPage = () => {
             onChange={(e) => inputChangeHandler(e)}
           />
         </div>
+        {imageSelected ? (
+          <div className='col-md-3'>
+            <Image src={imageThumbnail} alt='' width={70} height={70} />
+          </div>
+        ) : (
+          ''
+        )}
         <div className='col-12'>
           <button type='submit' className='btn btn-primary'>
             Submit
