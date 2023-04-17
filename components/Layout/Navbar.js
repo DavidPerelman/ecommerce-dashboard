@@ -27,7 +27,7 @@ const Navbar = () => {
               <Link className='navbar-brand' href='/dashboard/products'>
                 Products
               </Link>
-              <Link className='navbar-brand' href='/dashboard/categoriess'>
+              <Link className='navbar-brand' href='/dashboard/categories'>
                 Categories
               </Link>
               <Link className='navbar-brand' href='/dashboard/users'>
